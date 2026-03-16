@@ -15,7 +15,7 @@ end entity full_adder;
 architecture behavioural of full_adder is
 begin
 
-  s <= (a xor b) xor c_in when enable = '0' else '0';
-  c_out <= (a and b) or (c_in and b) or (c_in and a) when enable = '0' else '0'; 
+  s <= (a xor b) xor c_in when enable = '0' else 'Z';
+  c_out <= (a and b) or (c_in and b) or (c_in and a) when enable = '0' else 'Z'; 
 
 end architecture behavioural;

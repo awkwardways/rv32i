@@ -11,7 +11,7 @@ entity shifter is
     data   : in std_logic_vector(DATA_WIDTH - 1 downto 0);
     amnt   : in std_logic_vector(AMNT_WIDTH - 1 downto 0);
     dir    : in std_logic;  -- '1' for left '0' for right
-    shft   : in std_logic;
+    shft   : in std_logic;  -- '1' for logical shift, '0' for arithmetic shift
     enable : in std_logic;
     rslt   : out std_logic_vector(DATA_WIDTH - 1 downto 0)
   );
@@ -31,7 +31,7 @@ begin
         rslt(to_integer(unsigned(amnt) - 1) downto 0) <= (others => '0');
       end if;
     else
-      rslt <= (others => '1');
+      rslt <= (others => 'Z');
     end if;
   end process;
 
