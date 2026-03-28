@@ -7,9 +7,9 @@
 
 -mod_name Gowin_SP
 -file_name gowin_sp
--path D:/Documents/Codigo/VHDL/rv32i/src/gowin_sp/
+-path D:/Documents/Codigo/VHDL/rv32i/src/gowin_sp/gowin_sp/
 -type RAM_SP
--file_type vlg
+-file_type vhdl
 -depth 4096
 -width 32
 -read_mode bypass
