@@ -8,14 +8,24 @@ port(
   instr_bus  : in std_logic_vector(31 downto 0);
   ram_oce    : out std_logic;
   ram_cen    : out std_logic;
-  ram_wre    : out std_logic := '0'
+  ram_wre    : out std_logic := '0';
+  alu_en     : out std_logic := '0';
 );
 end entity control_unit;
 
 architecture rtl of control_unit is
-  type state_t is (address_ram, get_instruction, decode, increase_pc);
-  signal state : state_t := address_ram;
   signal instruction : std_logic_vector(31 downto 0);
+  signal state : state_t := address_ram;
+
+  type state_t is (address_ram, get_instruction, decode, increase_pc);
+  alias opcode is std_logic_vector(6 downto 0) : instruction(6 downto 0);
+  alias rd is std_logic_vector(4 downto 0) : instruction(11 downto 7);
+  alias funct3 is std_logic_vector(2 downto 0) : instruction(14 downto 12);
+  alias rs1 is std_logic_vector(4 downto 0) : instruction(19 downto 15);
+  alias imm_110 is std_logic_vector(11 downto 0) : instruction(31 downto 20);
+  constant OP_IMM : std_logic_vector(6 downto 0) := "0010011";
+
+  
 begin
 
   process(clk)
@@ -34,7 +44,12 @@ begin
           state <= decode;
         
         when decode => 
+          case opcode is
+            when OP_IMM => 
+
+          end case;
           state <= increase_pc;
+
 
         when increase_pc => 
           inc_pc <= '1';
