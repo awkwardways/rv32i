@@ -10,6 +10,10 @@ port(
   ram_cen    : out std_logic;
   ram_wre    : out std_logic := '0';
   alu_en     : out std_logic := '0';
+  alu_op     : out std_logic_vector(2 downto 0);
+  rd_sel     : out std_logic_vector(4 downto 0);
+  rs1_sel    : out std_logic_vector(4 downto 0);
+  rs2_sel    : out std_logic_vector(4 downto 0)
 );
 end entity control_unit;
 
@@ -46,7 +50,14 @@ begin
         when decode => 
           case opcode is
             when OP_IMM => 
-
+            alu_en <= '1';
+            alu_op <= funct3;
+            rd_sel <= rd;
+            rs1_sel <= rs1; 
+            if funct3 = "001" or funct3 = "101" then
+                
+            else
+            end if;
           end case;
           state <= increase_pc;
 
