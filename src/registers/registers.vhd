@@ -28,7 +28,7 @@ architecture rtl of registers_unit is
   --  wre  : std_logic;
   -- end record register_t;
   -- type registers_t is array (31 downto 0) of register_t;
-  type registers_t is array (4 downto 0) of std_logic_vector(31 downto 0);
+  type registers_t is array (31 downto 0) of std_logic_vector(31 downto 0);
   signal registers : registers_t := (others => (others => '0'));
 begin
 
