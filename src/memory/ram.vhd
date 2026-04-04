@@ -33,7 +33,7 @@ architecture rtl of ram is
       hread(buf, ram_content(i));
       i := i + 1;
     end loop;
-
+    ram_content(i to 4095) := ((others => x"00000013"));
     return ram_content;
   end function;
 

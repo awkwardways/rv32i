@@ -17,6 +17,7 @@ port(
   wre_in      : in std_logic;
   wre_out     : out std_logic;
   clk         : in std_logic;
+  reset       : in std_logic;
   begin_strb  : in std_logic;
   done_strb   : out std_logic;
   busy        : out std_logic
@@ -32,7 +33,7 @@ begin
 
   process(clk, begin_strb, address_in, din_in)
   begin
-    if rising_edge(clk) then
+    if rising_edge(clk) and reset = '0' then
       case state is
         when idle => 
           if begin_strb = '1' then
@@ -50,8 +51,6 @@ begin
           state <= acknowledge;
 
         when acknowledge =>
-          if wre_in = '0' then
-          end if; 
           done_strb <= '1';
           mem_en <= '0';
           state <= undo;
@@ -61,6 +60,13 @@ begin
           busy <= '0';
           state <= idle;
       end case;
+    elsif rising_edge(clk) and reset = '1' then
+      address_out <= (others => '0');
+      din_out     <= (others => '0');
+      mem_en      <= '0';
+      wre_out     <= '0';
+      done_strb   <= '0';
+      busy        <= '0';
     end if;
   end process;
 

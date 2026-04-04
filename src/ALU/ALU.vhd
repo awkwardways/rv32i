@@ -13,7 +13,6 @@ entity ALU is
     b      : in std_logic_vector(B_WIDTH - 1 downto 0);
     c      : out std_logic_vector(C_WIDTH - 1 downto 0);
     op_select : in std_logic_vector(2 downto 0);
-    enable    : in std_logic;
     modifier  : in std_logic
   );
 end entity ALU;
@@ -21,37 +20,35 @@ end entity ALU;
 architecture rtl of ALU is
 begin
 
-  process(op_select, enable, a, b)
+  process(op_select, a, b)
   begin
-    if enable = '0' then
-      case op_select is 
-        when "000" => 
-          c <= std_logic_vector(unsigned(a) + unsigned(b)) when modifier = '0' else std_logic_vector(unsigned(a) - unsigned(b));
+    case op_select is 
+      when "000" => 
+        c <= std_logic_vector(unsigned(a) + unsigned(b)) when modifier = '0' else std_logic_vector(unsigned(a) - unsigned(b));
 
-        when "001" => 
-          c <= std_logic_vector(shift_left(unsigned(a), to_integer(unsigned(b))));
+      when "001" => 
+        c <= std_logic_vector(shift_left(unsigned(a), to_integer(unsigned(b))));
 
-        when "010" => 
-          c <= 32x"1" when signed(a) > signed(b) else 32x"0";
+      when "010" => 
+        c <= 32x"1" when signed(a) > signed(b) else 32x"0";
 
-        when "011" => 
-          c <= 32x"1" when unsigned(a) > unsigned(b) else 32x"0";
-        
-        when "100" => 
-          c <= a xor b;
+      when "011" => 
+        c <= 32x"1" when unsigned(a) > unsigned(b) else 32x"0";
+      
+      when "100" => 
+        c <= a xor b;
 
-        when "101" => 
-          c <= std_logic_vector(shift_right(unsigned(a), to_integer(unsigned(b)))) when modifier = '0' else std_logic_vector(shift_right(signed(a), to_integer(unsigned(b))));
+      when "101" => 
+        c <= std_logic_vector(shift_right(unsigned(a), to_integer(unsigned(b)))) when modifier = '0' else std_logic_vector(shift_right(signed(a), to_integer(unsigned(b))));
 
-        when "110" => 
-          c <= a or b;
+      when "110" => 
+        c <= a or b;
 
-        when "111" => 
-          c <= a and b;
+      when "111" => 
+        c <= a and b;
 
-        when others => c <= (others => '0');
-      end case;
-    end if;
+      when others => c <= (others => '0');
+    end case;
   end process;
 
 end architecture rtl;

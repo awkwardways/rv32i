@@ -9,6 +9,7 @@ generic(
 );
 port(
   clk     : in std_logic;
+  reset   : in std_logic;
   rs1_en  : in std_logic;
   rs2_en  : in std_logic;
   rs1_sel : in std_logic_vector(4 downto 0);
@@ -37,11 +38,13 @@ begin
 
   process(clk, rd_sel, wre)
   begin
-    if rising_edge(clk) then
+    if rising_edge(clk) and reset = '0' then
       if rs1_en = '1' and wre = '1' then
         registers(to_integer(unsigned(rd_sel))) <= rd when rd_sel /= "00000" else (others => '0');
       end if;
-    end if;
+    elsif rising_edge(clk) and reset = '1' then
+      registers <= (others => (others => '0'));
+    end if; 
   end process;
 
 end architecture rtl;
