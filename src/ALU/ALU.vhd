@@ -27,7 +27,7 @@ begin
         c <= std_logic_vector(unsigned(a) + unsigned(b)) when modifier = '0' else std_logic_vector(unsigned(a) - unsigned(b));
 
       when "001" => 
-        c <= std_logic_vector(shift_left(unsigned(a), to_integer(unsigned(b))));
+        c <= std_logic_vector(shift_left(unsigned(a), to_integer(unsigned(b(4 downto 0)))));
 
       when "010" => 
         c <= 32x"1" when signed(a) > signed(b) else 32x"0";
@@ -39,7 +39,7 @@ begin
         c <= a xor b;
 
       when "101" => 
-        c <= std_logic_vector(shift_right(unsigned(a), to_integer(unsigned(b)))) when modifier = '0' else std_logic_vector(shift_right(signed(a), to_integer(unsigned(b))));
+        c <= std_logic_vector(shift_right(unsigned(a), to_integer(unsigned(b(4 downto 0))))) when modifier = '0' else std_logic_vector(shift_right(signed(a), to_integer(unsigned(b(4 downto 0)))));
 
       when "110" => 
         c <= a or b;

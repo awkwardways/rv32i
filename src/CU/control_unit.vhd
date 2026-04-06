@@ -11,6 +11,7 @@ port(
   begin_strb : out std_logic;
   done_strb  : in std_logic;
   alu_op     : out std_logic_vector(2 downto 0);
+  alu_mod    : out std_logic;
   rd_sel     : out std_logic_vector(4 downto 0);
   rs1_sel    : out std_logic_vector(4 downto 0);
   rs1_en     : out std_logic;
@@ -32,8 +33,10 @@ architecture rtl of control_unit is
   alias rd : std_logic_vector(4 downto 0) is instruction(11 downto 7);
   alias funct3 : std_logic_vector(2 downto 0) is instruction(14 downto 12);
   alias rs1 : std_logic_vector(4 downto 0) is instruction(19 downto 15);
+  alias rs2 : std_logic_vector(4 downto 0) is instruction(24 downto 20);
   alias imm_110 : std_logic_vector(11 downto 0) is instruction(31 downto 20);
   constant OP_IMM : std_logic_vector(6 downto 0) := "0010011";
+  constant OP : std_logic_vector(6 downto 0) := "0110011";
 
 begin
 
@@ -57,14 +60,27 @@ begin
 
         when decode => 
           case opcode is
-            when "0010011" => 
+            when OP_IMM => 
               alu_op <= funct3;
               rs1_sel <= rs1;
               rs1_en <= '1';
               rd_sel <= rd;
               imm_sel <= '1';
-              immediate(11 downto 0) <= imm_110;
-              immediate(31 downto 12) <= (others => imm_110(11));
+              if funct3 = "001" or funct3 = "101" then
+                immediate(4 downto 0) <= imm_110(4 downto 0);
+                immediate(31 downto 5) <= (others => '0');
+                alu_mod <= imm_110(10);
+              else 
+                immediate(11 downto 0) <= imm_110;
+                immediate(31 downto 12) <= (others => imm_110(11));
+              end if;
+
+            when OP => 
+                alu_op <= funct3;
+                rs1_sel <= rs1;
+                rs2_sel <= rs2;
+                rd_sel <= rd;
+                alu_mod <= imm_110(10);
             when others => state <= increase_pc;
           end case;
           state <= execute;
@@ -75,6 +91,7 @@ begin
           state <= increase_pc;
 
         when increase_pc => 
+          alu_mod <= '0';
           imm_sel <= '0';
           reg_wre <= '0';
           inc_pc <= '0';
@@ -97,6 +114,7 @@ begin
       immediate  <= (others => '0');
       state      <= address_ram;
       imm_sel    <= '0';
+      alu_mod    <= '0';
     end if;
   end process;
 

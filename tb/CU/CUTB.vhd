@@ -20,6 +20,7 @@ architecture sim of control_unit_tb is
   signal begin_strb_tb  : std_logic;
   signal done_strb_tb   : std_logic;
   signal alu_op_tb      : std_logic_vector(2 downto 0);
+  signal alu_mod_tb     : std_logic;
   signal rd_sel_tb      : std_logic_vector(4 downto 0);
   signal rd_tb          : std_logic_vector(REG_WIDTH_TB - 1 downto 0);
   signal rs1_sel_tb     : std_logic_vector(4 downto 0);
@@ -57,6 +58,7 @@ begin
     begin_strb => begin_strb_tb, 
     done_strb => done_strb_tb, 
     alu_op => alu_op_tb, 
+    alu_mod => alu_mod_tb,
     rd_sel => rd_sel_tb, 
     rs1_sel => rs1_sel_tb, 
     rs1_en  => rs1_en_tb,
@@ -136,7 +138,7 @@ begin
   )
   port map(
     imm => immediate_tb,
-    reg => rs1_tb,
+    reg => rs2_tb,
     sel => imm_sel_tb,
     outp => mux_out_tb
   );
@@ -148,11 +150,11 @@ begin
     C_WIDTH => C_WIDTH_TB
   )
   port map(
-    a => mux_out_tb,
-    b => rs2_tb,
+    a => rs1_tb,
+    b => mux_out_tb,
     c => rd_tb,
     op_select => alu_op_tb,
-    modifier => '0'
+    modifier => alu_mod_tb
   );
 
   stimuli: process
