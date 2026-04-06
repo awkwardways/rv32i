@@ -30,10 +30,10 @@ begin
         c <= std_logic_vector(shift_left(unsigned(a), to_integer(unsigned(b(4 downto 0)))));
 
       when "010" => 
-        c <= 32x"1" when signed(a) > signed(b) else 32x"0";
+        c <= 32x"1" when signed(a) < signed(b) else 32x"0";
 
       when "011" => 
-        c <= 32x"1" when unsigned(a) > unsigned(b) else 32x"0";
+        c <= 32x"1" when unsigned(a) < unsigned(b) else 32x"0";
       
       when "100" => 
         c <= a xor b;
