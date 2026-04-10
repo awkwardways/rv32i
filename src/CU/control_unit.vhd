@@ -24,6 +24,7 @@ port(
   rs2_en      : out std_logic;
   reg_wre     : out std_logic;
   mem_busy    : in std_logic;
+  mem_mask    : out std_logic_vector(1 downto 0);
   immediate   : out std_logic_vector(31 downto 0);
   imm_sel     : out std_logic
 );
@@ -31,7 +32,7 @@ end entity control_unit;
 
 architecture rtl of control_unit is
   signal instruction : std_logic_vector(31 downto 0);
-  type state_t is (get_next_instruction, store_instruction, decode_instruction, execute, get_load_data, store_load_data);
+  type state_t is (get_next_instruction, store_instruction, decode_instruction, execute, get_load_data, store_load_data, store_data, wait_store_data);
   signal state : state_t := get_next_instruction;
   signal address : std_logic_vector(ADDR_WIDTH - 1 downto 0);
   signal data    : std_logic_vector(DATA_WIDTH - 1 downto 0);
@@ -44,7 +45,6 @@ architecture rtl of control_unit is
   alias rs1 : std_logic_vector(4 downto 0) is instruction(19 downto 15);
   alias rs2 : std_logic_vector(4 downto 0) is instruction(24 downto 20);
   alias imm_110 : std_logic_vector(11 downto 0) is instruction(31 downto 20);
-  alias imm_11540 : std_logic_vector(11 downto 0) is (instruction(31 downto 25) & instruction(11 downto 7));
   constant OP_IMM : std_logic_vector(6 downto 0) := "0010011";
   constant OP     : std_logic_vector(6 downto 0) := "0110011";
   constant LOAD   : std_logic_vector(6 downto 0) := "0000011";
@@ -63,7 +63,7 @@ begin
   port map(
     reset => reset,
     clk => clk, 
-    inc => inc_pc,
+    inc => inc_pc,  
     count => count
   );
 
@@ -72,6 +72,7 @@ begin
     if rising_edge(clk) and reset = '0' then
       case state is
         when get_next_instruction => 
+          mem_mask <= "00";
           imm_sel <= '0';
           rs1_en <= '0';
           rs2_en <= '0';
@@ -126,24 +127,40 @@ begin
               imm_sel <= '1';
               immediate(11 downto 0) <= imm_110;
               immediate(31 downto 12) <= (others => imm_110(11));
+              mem_mask <= "10" when (funct3 = "000" or funct3 = "100") else "01" when (funct3 = "001" or funct3 = "101") else "00" when funct3 = "010";
               state <= get_load_data;
 
             when STORE => 
               alu_op <= "000";
               rs1_sel <= rs1;
               rs1_en <= '1';
+              rs2_sel <= rs2;
+              rs2_en <= '1';
               rd_sel <= rd;
               imm_sel <= '1';
-              immediate(11 downto 0) <= imm_11540;
-              immediate(31 downto 12) <= (others => imm_11540(11));
-              state <= get_load_data;
-            
+              immediate(11 downto 0) <= instruction(31 downto 25) & instruction(11 downto 7);
+              immediate(31 downto 12) <= (others => instruction(31));
+              mem_mask <= "10" when (funct3 = "000" or funct3 = "100") else "01" when (funct3 = "001" or funct3 = "101") else "00" when funct3 = "010";
+              state <= store_data;
+              
             when others => state <= get_next_instruction;
 
           end case;
+        
+        when store_data => 
+          address_out <= alu_in(ADDR_WIDTH - 1 downto 0);
+          wre <= '1';
+          begin_strb <= '1';
+          state <= wait_store_data;
+
+        when wait_store_data => 
+          begin_strb <= '0';
+          if done_strb = '1' then
+            state <= get_next_instruction;
+          end if;
 
         when get_load_data => 
-          address_out <= alu_in;
+          address_out <= alu_in(ADDR_WIDTH - 1 downto 0);
           wre <= '0';
           begin_strb <= '1';
           state <= store_load_data;
@@ -153,20 +170,14 @@ begin
           if done_strb = '1' then
             case funct3 is
               when "000" => 
-                immediate(7 downto 0) <= alu_in(7 downto 0);
+                immediate(7 downto 0) <= data_in(7 downto 0);
                 immediate(31 downto 8) <= (others => alu_in(7));
               when "001" => 
-                immediate(15 downto 0) <= alu_in(15 downto 0);
+                immediate(15 downto 0) <= data_in(15 downto 0);
                 immediate(31 downto 16) <= (others => alu_in(15));
               when "010" => 
-                immediate <= alu_in;
-              when "100" => 
-                immediate(7 downto 0) <= alu_in(7 downto 0);
-                immediate(31 downto 8) <= (others => '0');
-              when "101" => 
-                immediate(15 downto 0) <= alu_in(15 downto 0);                
-                immediate(31 downto 16) <= (others => '0');
-              when others => immediate <= alu_in;
+                immediate <= data_in;
+              when others => immediate <= data_in;
             end case;
             rs1_sel <= (others => '0');
             rs1_en <= '1';
@@ -197,6 +208,7 @@ begin
       state      <= get_next_instruction;
       imm_sel    <= '0';
       alu_mod    <= '0';
+      mem_mask   <= (others => '0');
     end if;
   end process;
 

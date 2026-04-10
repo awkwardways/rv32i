@@ -25,6 +25,7 @@ architecture sim of cpu_tb is
   signal data_out_tb     : std_logic_vector(DATA_WIDTH_TB - 1 downto 0);
   signal data_in_tb      : std_logic_vector(DATA_WIDTH_TB - 1 downto 0); 
   signal mem_en_tb       : std_logic;
+  signal mem_mask_tb     : std_logic_vector(1 downto 0);
   signal wre_out_tb      : std_logic;
 begin
 
@@ -42,7 +43,23 @@ begin
     data_out => data_out_tb,
     data_in => data_in_tb,
     mem_en => mem_en_tb,
+    mem_mask => mem_mask_tb,
     wre_out => wre_out_tb
+  );
+
+  RAM: entity work.ram(rtl)
+  generic map(
+    DATA_WIDTH => DATA_WIDTH_TB,
+    ADDR_WIDTH => ADDR_WIDTH_TB
+  )
+  port map(
+    address => address_bus_tb,
+    din => data_out_tb,
+    dout => data_in_tb,
+    mask => mem_mask_tb,
+    en => mem_en_tb,
+    wre => wre_out_tb,
+    clk => clk_tb
   );
   
   stimuli: process
@@ -50,23 +67,23 @@ begin
     reset_tb <= '1';
     wait until rising_edge(clk_tb);
     reset_tb <= '0';
-    data_in_tb <= ADDI;
-    wait for 8 * CLK_PERIOD;
-    data_in_tb <= SLTI;
-    wait for 8 * CLK_PERIOD;
-    data_in_tb <= SLTIU;
-    wait for 8 * CLK_PERIOD;
-    data_in_tb <= XORI;
-    wait for 8 * CLK_PERIOD;
-    data_in_tb <= ORI;
-    wait for 8 * CLK_PERIOD;
-    data_in_tb <= ANDI;
-    wait for 8 * CLK_PERIOD;
-    data_in_tb <= SLLI;
-    wait for 8 * CLK_PERIOD;
-    data_in_tb <= SRLI;
-    wait for 8 * CLK_PERIOD;
-    data_in_tb <= SRAI;
+    -- data_in_tb <= ADDI;
+    -- wait for 8 * CLK_PERIOD;
+    -- data_in_tb <= SLTI;
+    -- wait for 8 * CLK_PERIOD;
+    -- data_in_tb <= SLTIU;
+    -- wait for 8 * CLK_PERIOD;
+    -- data_in_tb <= XORI;
+    -- wait for 8 * CLK_PERIOD;
+    -- data_in_tb <= ORI;
+    -- wait for 8 * CLK_PERIOD;
+    -- data_in_tb <= ANDI;
+    -- wait for 8 * CLK_PERIOD;
+    -- data_in_tb <= SLLI;
+    -- wait for 8 * CLK_PERIOD;
+    -- data_in_tb <= SRLI;
+    -- wait for 8 * CLK_PERIOD;
+    -- data_in_tb <= SRAI;
     wait;
   end process stimuli;
 

@@ -13,6 +13,7 @@ port(
   data_out    : out std_logic_vector(DATA_WIDTH - 1 downto 0);
   data_in     : in std_logic_vector(DATA_WIDTH - 1 downto 0);
   mem_en      : out std_logic;
+  mem_mask    : out std_logic_vector(1 downto 0);
   wre_out     : out std_logic
 );
 end entity cpu;
@@ -63,6 +64,7 @@ begin
     rs2_sel => rs2_sel, 
     rs2_en => rs2_en,
     reg_wre => reg_wre,
+    mem_mask => mem_mask,
     mem_busy => busy,
     immediate => immediate,
     imm_sel => imm_sel
