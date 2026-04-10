@@ -23,7 +23,6 @@ architecture rtl of cpu is
   constant B_WIDTH    : integer := 32;
   constant C_WIDTH    : integer := 32;
 
-  signal inc_pc         : std_logic;
   signal data_in_cu     : std_logic_vector(DATA_WIDTH - 1 downto 0);
   signal wre_in         : std_logic;
   signal begin_strb     : std_logic; 
