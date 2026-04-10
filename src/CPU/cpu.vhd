@@ -13,6 +13,7 @@ port(
   data_out    : out std_logic_vector(DATA_WIDTH - 1 downto 0);
   data_in     : in std_logic_vector(DATA_WIDTH - 1 downto 0);
   mem_en      : out std_logic;
+  mem_mask    : out std_logic_vector(1 downto 0);
   wre_out     : out std_logic
 );
 end entity cpu;
@@ -22,47 +23,48 @@ architecture rtl of cpu is
   constant B_WIDTH    : integer := 32;
   constant C_WIDTH    : integer := 32;
 
-  signal inc_pc     : std_logic;
-  signal instr_bus  : std_logic_vector(DATA_WIDTH - 1 downto 0);
-  signal wre_in     : std_logic;
-  signal begin_strb : std_logic; 
-  signal done_strb  : std_logic;
-  signal alu_op     : std_logic_vector(2 downto 0);
-  signal alu_mod    : std_logic;
-  signal rd         : std_logic_vector(DATA_WIDTH - 1 downto 0);
-  signal rd_sel     : std_logic_vector(4 downto 0);
-  signal rs1        : std_logic_vector(DATA_WIDTH - 1 downto 0);
-  signal rs1_sel    : std_logic_vector(4 downto 0);
-  signal rs1_en     : std_Logic;
-  signal rs2        : std_logic_vector(DATA_WIDTH - 1 downto 0);
-  signal rs2_sel    : std_logic_vector(4 downto 0);
-  signal rs2_en     : std_logic;
-  signal reg_wre    : std_logic;
-  signal busy       : std_logic;
-  signal immediate  : std_logic_vector(DATA_WIDTH - 1 downto 0);
-  signal imm_sel    : std_logic;
-  signal count      : std_logic_vector(ADDR_WIDTH - 1 downto 0);
-  signal din_in     : std_logic_vector(DATA_WIDTH - 1 downto 0);
-  signal mux_out    : std_logic_vector(DATA_WIDTH - 1 downto 0);
+  signal inc_pc         : std_logic;
+  signal data_in_cu     : std_logic_vector(DATA_WIDTH - 1 downto 0);
+  signal wre_in         : std_logic;
+  signal begin_strb     : std_logic; 
+  signal done_strb      : std_logic;
+  signal alu_op         : std_logic_vector(2 downto 0);
+  signal alu_mod        : std_logic;
+  signal rd             : std_logic_vector(DATA_WIDTH - 1 downto 0);
+  signal rd_sel         : std_logic_vector(4 downto 0);
+  signal rs1            : std_logic_vector(DATA_WIDTH - 1 downto 0);
+  signal rs1_sel        : std_logic_vector(4 downto 0);
+  signal rs1_en         : std_Logic;
+  signal rs2            : std_logic_vector(DATA_WIDTH - 1 downto 0);
+  signal rs2_sel        : std_logic_vector(4 downto 0);
+  signal rs2_en         : std_logic;
+  signal reg_wre        : std_logic;
+  signal busy           : std_logic;
+  signal immediate      : std_logic_vector(DATA_WIDTH - 1 downto 0);
+  signal imm_sel        : std_logic;
+  signal address_out_cu : std_logic_vector(ADDR_WIDTH - 1 downto 0);
+  signal mux_out        : std_logic_vector(DATA_WIDTH - 1 downto 0);
 begin
 
   CU: entity work.control_unit(rtl)
   port map(
     clk => clk, 
     reset => reset,
-    inc_pc => inc_pc, 
-    instr_bus => instr_bus, 
+    data_in => data_in_cu, 
+    address_out => address_out_cu, 
     wre => wre_in,
     begin_strb => begin_strb, 
     done_strb => done_strb, 
     alu_op => alu_op, 
     alu_mod => alu_mod,
+    alu_in => rd,
     rd_sel => rd_sel, 
     rs1_sel => rs1_sel, 
     rs1_en  => rs1_en,
     rs2_sel => rs2_sel, 
     rs2_en => rs2_en,
     reg_wre => reg_wre,
+    mem_mask => mem_mask,
     mem_busy => busy,
     immediate => immediate,
     imm_sel => imm_sel
@@ -74,12 +76,12 @@ begin
     DATA_WIDTH => DATA_WIDTH
   )
   port map(
-    address_in  => count,
+    address_in  => address_out_cu,
     address_out => address_bus, 
-    din_in      => din_in,
+    din_in      => rs2,
     din_out     => data_out,
     dout_in     => data_in,
-    dout_out    => instr_bus,
+    dout_out    => data_in_cu,
     mem_en      => mem_en,
     wre_in      => wre_in,
     wre_out     => wre_out,
@@ -106,14 +108,6 @@ begin
     rs2 => rs2,
     rd => rd,
     wre => reg_wre 
-  );
-
-  PC: entity work.program_counter(rtl)
-  port map(
-    reset => reset,
-    count => count,
-    clk => clk,
-    inc => inc_pc
   );
 
   ALU: entity work.alu(rtl)
